@@ -1,0 +1,73 @@
+services:
+  node:
+    build:
+      context: ./api
+      target: dev
+    hostname: node
+    container_name: node
+    volumes:
+      - ./api/index.js:/src/index.js
+  nginx:
+    image: nginx:alpine
+    hostname: nginx
+    container_name: nginx
+    ports:
+      - 8080:80
+    # restart: always
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - vector
+      - node
+  vector:
+    image: timberio/vector:latest-alpine
+    hostname: vector
+    container_name: vector
+    # restart: always
+    volumes:
+      - ./vector:/etc/vector
+  # influx_db:
+  #   image: influxdb:latest
+  #   hostname: influx_db
+  #   container_name: influx_db
+  #   ports:
+  #     - 8086:8086
+  #   volumes:
+  #     - ./influxdb:/var/lib/influxdb
+  #     - ./influxdb2:/var/lib/influxdb2
+  #   environment:
+  #     - DOCKER_INFLUXDB_INIT_MODE=setup
+  #     - DOCKER_INFLUXDB_INIT_USERNAME=admin
+  #     - DOCKER_INFLUXDB_INIT_PASSWORD=password
+  #     - DOCKER_INFLUXDB_INIT_ORG=vector-org
+  #     - DOCKER_INFLUXDB_INIT_BUCKET=vector-bucket
+  #     - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=eYjUEquChCA6VVEP6UCki4BG7rLm3HgoCsrWJVIqzU70RFDMqW_nSEhCzSw5cpJMvh8Z0XclK9E6Z_F4cCT5ww==
+  greptimedb:
+    image: greptime/greptimedb:latest
+    hostname: greptimedb
+    container_name: greptimedb
+    command:
+      [
+        "standalone",
+        "start",
+        "--http-addr=0.0.0.0:4000",
+        "--rpc-addr=0.0.0.0:4001",
+        "--mysql-addr=0.0.0.0:4002",
+        "--postgres-addr=0.0.0.0:4003",
+      ]
+  # grafana:
+  #   image: grafana/grafana
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./grafana-db:/var/lib/grafana
+  #     - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+  grafana:
+    image: greptime/grafana-greptimedb:latest
+    hostname: grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana-db:/var/lib/grafana
+      - ./grafana-conf/defaults.ini:/usr/share/grafana/conf/defaults.ini

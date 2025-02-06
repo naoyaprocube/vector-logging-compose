@@ -1,0 +1,71 @@
+#                                    __   __  __
+#                                    \ \ / / / /
+#                                     \ V / / /
+#                                      \_/  \/
+#
+#                                    V E C T O R
+#                                   Configuration
+#
+# ------------------------------------------------------------------------------
+# Website: https://vector.dev
+# Docs: https://vector.dev/docs
+# Chat: https://chat.vector.dev
+# ------------------------------------------------------------------------------
+
+sources:
+  syslog:
+    type: syslog
+    address: 0.0.0.0:514
+    max_length: 102400
+    mode: udp
+    path: /var/log/syslog
+    permit_origin:
+      - 172.19.0.0/16
+
+transforms:
+  parse_log:
+    type: "remap"
+    inputs: 
+      - "syslog"
+    source: |
+      parsed_message = parse_json!(.message)
+      del(.message)
+      . = merge!(., parsed_message)
+      .ts = .time
+      del(.time)
+      .size = to_int!(.size)
+      .reqtime = to_float!(.reqtime)
+      if .upstreamtime == "" {
+        .upstreamtime = 0.00
+      } else {
+        .upstreamtime = to_float!(.upstreamtime)
+      }
+
+# Print parsed logs to stdout
+sinks:
+  print:
+    type: "console"
+    inputs: 
+      - "parse_log"
+    encoding:
+      codec: "json"
+      json:
+        pretty: true
+  # influxdb:
+  #   type: influxdb_logs
+  #   inputs:
+  #     - parse_log
+  #   bucket: vector-bucket
+  #   measurement: syslog
+  #   # database: vector-database
+  #   endpoint: http://influx_db:8086
+  #   healthcheck: false
+  #   org: vector-org
+  #   token: eYjUEquChCA6VVEP6UCki4BG7rLm3HgoCsrWJVIqzU70RFDMqW_nSEhCzSw5cpJMvh8Z0XclK9E6Z_F4cCT5ww==
+  greptimedb:
+    type: "greptimedb_logs"
+    inputs:
+      - parse_log
+    endpoint: http://greptimedb:4000
+    table: logs
+
