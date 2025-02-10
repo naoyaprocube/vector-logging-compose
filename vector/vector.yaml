@@ -31,7 +31,7 @@ transforms:
       parsed_message = parse_json!(.message)
       del(.message)
       . = merge!(., parsed_message)
-      .ts = .time
+      .timestamp = to_unix_timestamp!(.timestamp, unit: "milliseconds")
       del(.time)
       .size = to_int!(.size)
       .reqtime = to_float!(.reqtime)
@@ -67,5 +67,9 @@ sinks:
     inputs:
       - parse_log
     endpoint: http://greptimedb:4000
+    compression: "gzip"
+    encoding:
+      timestamp_format: "unix_ms"
     table: logs
+    pipeline_name: "nginx_pipeline"
 

@@ -46,6 +46,8 @@ services:
     image: greptime/greptimedb:latest
     hostname: greptimedb
     container_name: greptimedb
+    volumes:
+      - ./greptimedb:/tmp/greptimedb
     command:
       [
         "standalone",
@@ -63,7 +65,8 @@ services:
   #     - ./grafana-db:/var/lib/grafana
   #     - ./grafana/grafana.ini:/etc/grafana/grafana.ini
   grafana:
-    image: greptime/grafana-greptimedb:latest
+    build:
+      context: ./grafana-conf
     hostname: grafana
     container_name: grafana
     ports:

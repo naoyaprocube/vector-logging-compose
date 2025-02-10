@@ -1,0 +1,4 @@
+FROM grafana/grafana
+
+RUN grafana cli --pluginUrl https://github.com/GreptimeTeam/greptimedb-grafana-datasource/releases/latest/download/info8fcc-greptimedb-datasource.zip plugins install info8fcc
+USER root

@@ -1,0 +1,35 @@
+transform:
+  - fields:
+      - timestamp
+    type: epoch, ms
+    index: timestamp
+  - fields:
+    - appname
+    - facility
+    - user
+    - method
+    type: string
+    index: tag
+  - fields:
+      - status
+      - upstreamstatus
+    type: int8
+    index: tag
+  - fields:
+      - size
+    type: int64
+  - fields:
+      - reqtime
+      - upstreamtime
+    type: float32
+  - fields:
+      - path
+      - protocol
+      - vhost
+      - xff
+      - conn
+      - ua
+      - origin
+      - upstreamaddr
+      - referrer
+    type: string
